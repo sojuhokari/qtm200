@@ -1,0 +1,203 @@
+---
+title: "Lecture02 practice"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+#library(ggplot2)
+#library(car)
+
+```
+
+## Import dataset to R
+
+```{r}
+
+Duncan<-read.table("http://socserv.socsci.mcmaster.ca/jfox/Books/Applied-Regression-3E/datasets/Duncan.txt",header=T)
+
+#or 
+
+Duncan<-read.table("Duncan.txt") 
+# If you save/download the dataset and Rmarkdown file at the same folder, then you can simplify the above code to import the data
+
+#or
+
+library(car)
+Duncan
+```
+
+
+## Headers start with hashtags
+
+# Header 1
+
+## Header 2
+
+### Header 3
+
+#### Header 4
+
+## Making a table
+
+| Col1 | Col2 | Col3 |
+|------|------|------|
+|      |      |      |
+|      |      |      |
+|      |      |      |
+
+| .   | .   |
+|-----|-----|
+| .   | .   |
+
+| Variable | Mean |
+|---------:|:-----|
+|    Girth | 13.1 |
+
+## Lists
+
+-   unordered list
+    -   sub-item 1
+    -   sub-item 2
+        -   sub-sub-item 1
+-   item 2
+
+1.  ordered list
+2.  item 2
+    i)  sub-item 1 A. sub-sub-item 1
+
+Check Rmarkdown cheat sheet!!!
+
+## inline R code
+
+```{r}
+set.seed(123) # Guarantee the same result for random stuff
+
+x <- sample(1:10,5, replace=F)
+x
+m<-mean(x)
+```
+
+inline code, using backquote + r
+
+The value of `r m` is the average of one sample.
+
+## Statistics
+
+### Variables of Duncan:
+
+-   type: Type of occupation: prof, professional and managerial; wc, white-collar; bc, blue collar.
+-   income: Percent of males in occupation earning \$3500 or more in 1950.
+-   education: Percent of males in occupation in 1950 who were high-school graduates.
+-   prestige: Percent of raters in NORC study rating occupation as excellent or good in prestige.
+
+### Extract observations from a dataset
+
+```{r}
+Duncan$income
+
+# index operator to select certain columns and rows
+Duncan[,2]
+
+# Including a logical expression, to select only "prof" values
+Duncan$income[Duncan$type == "prof"]  # including the logical expression
+
+```
+
+### Numerical Summaries
+
+average and sd
+
+```{r}
+mean(Duncan$income[Duncan$type=="bc"])
+sd(Duncan$income)
+
+# Calculate the mean income per type
+tapply(Duncan$income, Duncan$type, mean)
+
+# Calculate the sd income per type
+tapply(Duncan$income, Duncan$type, sd)
+```
+
+### Visualization
+
+```{r}
+# one variable
+hist(Duncan$income)
+boxplot(Duncan$income)
+
+# two variables
+#plot(x,y)
+# plot(y~x)
+plot(Duncan$income, Duncan$prestige)
+
+# Aesthetics!
+plot(Duncan$income, Duncan$prestige, main="The scatterplot", type="p", pch=4, cex=2, col="red")   
+```
+
+More complicated plots
+
+```{r}
+plot(Duncan$education,Duncan$income,type="n",xlab="education",ylab="income") ## Don't plot points.
+points(Duncan$education[Duncan$type=="bc"],Duncan$income[Duncan$type=="bc"],pch=15, col=1)
+points(Duncan$education[Duncan$type=="prof"],Duncan$income[Duncan$type=="prof"],pch=16,col=2)
+points(Duncan$education[Duncan$type=="wc"],Duncan$income[Duncan$type=="wc"],pch=17,col=4)
+legend(10,70,c("bc","prof","wc"),col=c(1,2,4),pch=c(15,16,17))
+```
+
+```{r}
+library(ggplot2)
+ggplot(Duncan, aes(x=education, y=income))+
+  geom_point(aes(col=type))
+```
+
+### Inferential Statistics
+
+Construct a confidence interval and do a hypothesis testing for the average income
+
+```{r}
+xbar<-mean(Duncan$income)
+s<-sd(Duncan$income)
+n<-nrow(Duncan)
+n
+alpha<-0.05
+criticalt<-qt(0.025,n-1,lower.tail = F)
+```
+
+A confidence interval for true mean of income
+
+```{r}
+L<-xbar-criticalt*s/sqrt(n)
+U<-xbar+criticalt*s/sqrt(n)
+```
+
+A 95% CI for mean is (`r L`, `r U`).
+
+Hypothesis testing
+
+```{r}
+# method 1
+t<-(xbar-50)*sqrt(n)/s
+2*pt(t,n-1,lower.tail = T)
+
+# method 2
+t.test(Duncan$income, alternative = "two.sided", mu=50, conf.level = 0.95)
+
+```
+
+### Check Normality
+
+```{r}
+qqnorm(Duncan$income)
+qqline(Duncan$income)
+
+qqnorm(Duncan$prestige)
+qqline(Duncan$prestige)
+
+```
+
+```{r}
+plot(Duncan$income, Duncan$prestige)
+cor(Duncan$income,Duncan$prestige)
+
+```
