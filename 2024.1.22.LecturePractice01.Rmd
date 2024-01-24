@@ -18,7 +18,7 @@ Duncan<-read.table("http://socserv.socsci.mcmaster.ca/jfox/Books/Applied-Regress
 
 #or 
 
-Duncan<-read.table("Duncan.txt") 
+# Duncan<-read.table("Duncan.txt") 
 # If you save/download the dataset and Rmarkdown file at the same folder, then you can simplify the above code to import the data
 
 #or
@@ -139,62 +139,90 @@ More complicated plots
 
 ```{r}
 plot(Duncan$education,Duncan$income,type="n",xlab="education",ylab="income") ## Don't plot points.
+
 points(Duncan$education[Duncan$type=="bc"],Duncan$income[Duncan$type=="bc"],pch=15, col=1)
+
 points(Duncan$education[Duncan$type=="prof"],Duncan$income[Duncan$type=="prof"],pch=16,col=2)
+
 points(Duncan$education[Duncan$type=="wc"],Duncan$income[Duncan$type=="wc"],pch=17,col=4)
+
 legend(10,70,c("bc","prof","wc"),col=c(1,2,4),pch=c(15,16,17))
 ```
 
+GGPlot!!!
+
 ```{r}
+# Import ggplot2
 library(ggplot2)
+
+# Use aesthetics to have things that change
 ggplot(Duncan, aes(x=education, y=income))+
   geom_point(aes(col=type))
 ```
 
 ### Inferential Statistics
 
+#### Confidence intervals!
+
 Construct a confidence interval and do a hypothesis testing for the average income
 
 ```{r}
-xbar<-mean(Duncan$income)
-s<-sd(Duncan$income)
-n<-nrow(Duncan)
+# The sample mean
+xbar <- mean(Duncan$income)
+
+# The sample sd
+s <- sd(Duncan$income)
+
+# The sample size
+n <- nrow(Duncan)
 n
-alpha<-0.05
-criticalt<-qt(0.025,n-1,lower.tail = F)
+
+# The alpha
+alpha <- 0.05
+
+# The critical value for the t distribution
+#     use the qt function! qt(alpha/2, degrees of freedom)
+#     we set the lower tail to false because we want the t stat on the right tail.
+criticalt <- qt(0.025, n-1, lower.tail = F)
 ```
 
 A confidence interval for true mean of income
 
 ```{r}
-L<-xbar-criticalt*s/sqrt(n)
-U<-xbar+criticalt*s/sqrt(n)
+L <- xbar - criticalt * s / sqrt(n)
+U <- xbar + criticalt * s / sqrt(n)
 ```
 
 A 95% CI for mean is (`r L`, `r U`).
 
-Hypothesis testing
+#### Hypothesis testing
+H0: population mean income is 50; Ha: population mean income is not 50
 
 ```{r}
-# method 1
-t<-(xbar-50)*sqrt(n)/s
-2*pt(t,n-1,lower.tail = T)
+# method 1: get a p-value and see if it is lower than our significance level.
+t <- (xbar - 50) * sqrt(n) / s
+t
+# pt: getting you the p-value of a given t test statistic
+#     multiply by 2 bc it's a two-sided test
+2 * pt(t, n-1, lower.tail = T)
+# p-value is less than 0.05, so we reject the null hypothesis.
 
-# method 2
-t.test(Duncan$income, alternative = "two.sided", mu=50, conf.level = 0.95)
-
+# method 2: Use the t.test function
+t.test(Duncan$income, alternative = "two.sided", mu = 50, conf.level = 0.95)
 ```
 
 ### Check Normality
 
 ```{r}
+# plot the qq plot
 qqnorm(Duncan$income)
-qqline(Duncan$income)
+qqline(Duncan$income) # Add the reference line
 
 qqnorm(Duncan$prestige)
 qqline(Duncan$prestige)
-
 ```
+
+NOT normal. It has fat tails.
 
 ```{r}
 plot(Duncan$income, Duncan$prestige)
