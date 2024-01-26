@@ -1,0 +1,119 @@
+---
+title: "HW1"
+author: "This author section should be left blank empty for anonymous grading"
+date: "Due 2024-01-29"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+# Here you load the necessary packages.
+library("ggplot2")
+
+# Here you enter your name: Soju Hokari - It won't show in the .html file but show in the .rmd file. 
+
+```
+
+## Instruction: 
+Once you have completed your answer, please submit both the knitted .html file and the .rmd file together.
+
+### Question 1: Write your code in the code chunk and your text answer after the code chunk.
+
+```{r}
+y <- c(1,2,1,3,4,1,1,4,2,1,3,4,3,2,1,3,4,1,2,3,1,1,2,1,1,3,4)
+y[y == 1] <- "Freshman"
+y[y == 2] <- "Sophomore"
+y[y == 3] <- "Junior"
+y[y == 4] <- "Senior"
+```
+
+Variable `y` is now the following:
+
+`r y`
+
+### Question 2: Write your code in the code chunk and your text answer after the code chunk.
+
+```{r}
+y <- c(105,69,86,100,82,111,104,110,87,108,87,90,94,113,112,98,80,97,95,111,114,89,95,126,98)
+
+xbar <- mean(y)
+
+n <- length(y)
+
+s <- sd(y)
+
+# 90% conf. int., so we set alpha to 0.1
+alpha <- 0.1
+
+criticalt <- qt(alpha/2, n-1, lower.tail = F)
+
+lower <- xbar - criticalt * s / sqrt(n)
+upper <- xbar + criticalt * s / sqrt(n)
+```
+
+**The 90% confidence interval for the average student IQ in the school is [`r lower`, `r upper`]**
+
+### Question 3: Write your code in the code chunk and your text answer after the code chunk.
+
+```{r}
+# H0: average IQ in the school is higher than 100
+# Ha: average IQ in the school is not higher than 100
+
+results <- t.test(y, alternative = "greater", mu = 100, conf.level = 0.95)
+```
+
+The p-value is `r results$p.value`, which is more than 0.05. We therefore **fail
+to reject the null hypothesis**, which means that the population mean for the IQ
+of students at the school could be less than 100.
+
+### Question 4: Write your code in the code chunk and your text answer after the code chunk.
+
+```{r}
+# Import `expenditure` data set; clean it up a little
+expenditure <- read.table("datasets/expenditure.txt", header=T)
+
+expenditure$Region <- factor(expenditure$Region, labels = c("Northeast", "North Central", "South", "West"))
+
+summary(expenditure)
+
+ggplot(expenditure) +
+  geom_point(aes(x = X1, y = Y, size = X2, color = X3)) +
+  xlab("Per capita personal income") +
+  ylab("Per capita expenditure on public education") +
+  labs(size = "Number of residents per thousand under 18 years of age", color = "Number of people per thousand residing in urban areas")
+
+ggplot(expenditure) +
+  geom_point(aes(x = X2, y = Y)) + 
+  xlab("Number of residents per thousand under 18 years of age") +
+  ylab("Per capita expenditure on public education")
+
+ggplot(expenditure) +
+  geom_point(aes(x = X3, y = Y)) + 
+  xlab("Number of people per thousand residing in urban areas") +
+  ylab("Per capita expenditure on public education")
+```
+A scatterplot is the appropriate graph to visualize these relationships. To me, it looks like there is a strong positive correlation between Y (per capita expenditure on public education) and X1 (per capita personal income), a weak positive correlation between Y and X3 (number of people per thousand residing in urban areas), and no correlation between Y and X2 (number of residents per thousand under 18 years of age).
+
+### Question 5: Write your code in the code chunk and your text answer after the code chunk.
+
+```{r}
+boxplot(expenditure$Y ~ expenditure$Region)
+
+results <- t.test(expenditure$Y[expenditure$Region == "West"], alternative = "two.sided", mu = 100, conf.level = 0.95)
+```
+
+A side-by-side boxplot is most appropriate to visualize the relationship between Y and Region. On average, the West has the highest per capita expenditure on public education. The confidence interval for the true average per capita expenditure in the West is [`r results$conf.int`].
+
+### Question 6: Write your code in the code chunk and your text answer after the code chunk.
+
+```{r}
+ggplot(expenditure) +
+  geom_point(aes(x = X1, y = Y, color = Region, shape = Region)) +
+  xlab("Per capita personal income") +
+  ylab("Per capita expenditure on public education") +
+  labs(color = "Region")
+```
+
+Y and X1 seem to have a relatively strong, positive, linear relationship.
+

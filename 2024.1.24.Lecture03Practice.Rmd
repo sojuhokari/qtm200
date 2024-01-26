@@ -1,0 +1,63 @@
+---
+title: "SLR estimation"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(car)
+library(carData)
+```
+
+
+```{r}
+# visualizing scatterplot
+plot(Duncan$prestige~Duncan$income)
+abline(lm.out)
+# calculate correlation
+cor(Duncan$prestige, Duncan$income)
+
+lm.out<-lm(Duncan$prestige~Duncan$income)
+
+lm.out$coefficients
+names(lm.out)
+
+summary(lm.out)
+```
+
+Calculate estimated slope and intercept by summaries:
+```{r}
+xbar<-mean(Duncan$income)
+ybar<-mean(Duncan$prestige)
+xs<-sd(Duncan$income)
+ys<-sd(Duncan$prestige)
+r<-cor(Duncan$prestige, Duncan$income)
+
+slope<-r*ys/xs
+intercept<-ybar-slope*xbar
+```
+
+
+R^2
+
+```{r}
+summary(lm.out)
+anova(lm.out)
+
+R2<-30665/(30665+13023)
+
+```
+
+sigma^2
+
+```{r}
+summary(lm.out)
+# or
+# residual standard error
+lm.out$fitted.values
+RSS<-sum((Duncan$prestige-lm.out$fitted.values)^2)
+RSS
+n<-nrow(Duncan)
+sigma_hat<-sqrt(RSS/(n-2))
+```
+
