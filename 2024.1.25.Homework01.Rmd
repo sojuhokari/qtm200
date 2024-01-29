@@ -10,6 +10,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 # Here you load the necessary packages.
 library("ggplot2")
+library("tidyverse")
 
 # Here you enter your name: Soju Hokari - It won't show in the .html file but show in the .rmd file. 
 
@@ -43,13 +44,19 @@ n <- length(y)
 
 s <- sd(y)
 
-# 90% conf. int., so we set alpha to 0.1
+# We're using a 90% conf. int., so we set alpha to 0.1
 alpha <- 0.1
 
 criticalt <- qt(alpha/2, n-1, lower.tail = F)
 
 lower <- xbar - criticalt * s / sqrt(n)
 upper <- xbar + criticalt * s / sqrt(n)
+
+# OR Just use a t-test:
+  # results <- t.test(y, alternative = "two.sided", mu = 100, conf.level = 0.9)
+
+  # lower <- results$conf.int[1]
+  # upper <- results$conf.int[2]
 ```
 
 **The 90% confidence interval for the average student IQ in the school is [`r lower`, `r upper`]**
@@ -77,23 +84,41 @@ expenditure$Region <- factor(expenditure$Region, labels = c("Northeast", "North 
 
 summary(expenditure)
 
-ggplot(expenditure) +
-  geom_point(aes(x = X1, y = Y, size = X2, color = X3)) +
+# Plot the data!
+plot_1 <- ggplot(expenditure) +
+  geom_point(aes(x = X1, y = Y)) +
   xlab("Per capita personal income") +
   ylab("Per capita expenditure on public education") +
-  labs(size = "Number of residents per thousand under 18 years of age", color = "Number of people per thousand residing in urban areas")
+  theme(text = element_text(size = 5))
+plot_2 <- ggplot(expenditure) +
+  geom_point(aes(x = X2, y = Y)) +
+  xlab("Residents per thousand under 18 years of age") +
+  ylab("Per capita expenditure on public education") +
+  theme(text = element_text(size = 5))
+plot_3 <- ggplot(expenditure) +
+  geom_point(aes(x = X3, y = Y)) +
+  xlab("People per thousand residing in urban areas") +
+  ylab("Per capita expenditure on public education") +
+  theme(text = element_text(size = 5))
+plot_4 <- ggplot(expenditure) +
+  geom_point(aes(x = X1, y = X2)) +
+  xlab("Per capita personal income") +
+  ylab("Residents per thousand under 18 years of age") +
+  theme(text = element_text(size = 5))
+plot_5 <- ggplot(expenditure) +
+  geom_point(aes(x = X1, y = X3)) +
+  xlab("Per capita personal income") +
+  ylab("People per thousand residing in urban areas") +
+  theme(text = element_text(size = 5))
+plot_6 <- ggplot(expenditure) +
+  geom_point(aes(x = X2, y = X3)) +
+  xlab("Residents per thousand under 18 years of age") +
+  ylab("People per thousand residing in urban areas") +
+  theme(text = element_text(size = 5))
 
-ggplot(expenditure) +
-  geom_point(aes(x = X2, y = Y)) + 
-  xlab("Number of residents per thousand under 18 years of age") +
-  ylab("Per capita expenditure on public education")
-
-ggplot(expenditure) +
-  geom_point(aes(x = X3, y = Y)) + 
-  xlab("Number of people per thousand residing in urban areas") +
-  ylab("Per capita expenditure on public education")
+cowplot::plot_grid(plot_1, plot_2, plot_3, plot_4, plot_5, plot_6, nrow = 3)
 ```
-A scatterplot is the appropriate graph to visualize these relationships. To me, it looks like there is a strong positive correlation between Y (per capita expenditure on public education) and X1 (per capita personal income), a weak positive correlation between Y and X3 (number of people per thousand residing in urban areas), and no correlation between Y and X2 (number of residents per thousand under 18 years of age).
+Scatterplots are the appropriate graph to visualize these relationships. To me, it looks like there is a strong positive correlation between Y (per capita expenditure on public education) and X1 (per capita personal income), a weak positive correlation between Y and X3 (number of people per thousand residing in urban areas), and no correlation between Y and X2 (number of residents per thousand under 18 years of age). Between the X variables, there appears to be a strong positive correlation between X1 and X3, a weak negative relationship between X1 and X2, and what appears to be no relation between X2 and X3.
 
 ### Question 5: Write your code in the code chunk and your text answer after the code chunk.
 
