@@ -13,7 +13,6 @@ library("ggplot2")
 library("tidyverse")
 
 # Here you enter your name: Soju Hokari - It won't show in the .html file but show in the .rmd file. 
-
 ```
 
 ## Instruction: 
@@ -67,7 +66,7 @@ upper <- xbar + criticalt * s / sqrt(n)
 # H0: average IQ in the school is higher than 100
 # Ha: average IQ in the school is not higher than 100
 
-results <- t.test(y, alternative = "greater", mu = 100, conf.level = 0.95)
+results <- t.test(y, alternative = "less", mu = 100, conf.level = 0.95)
 ```
 
 The p-value is `r results$p.value`, which is more than 0.05. We therefore **fail
@@ -84,41 +83,14 @@ expenditure$Region <- factor(expenditure$Region, labels = c("Northeast", "North 
 
 summary(expenditure)
 
-# Plot the data!
-plot_1 <- ggplot(expenditure) +
-  geom_point(aes(x = X1, y = Y)) +
-  xlab("Per capita personal income") +
-  ylab("Per capita expenditure on public education") +
-  theme(text = element_text(size = 5))
-plot_2 <- ggplot(expenditure) +
-  geom_point(aes(x = X2, y = Y)) +
-  xlab("Residents per thousand under 18 years of age") +
-  ylab("Per capita expenditure on public education") +
-  theme(text = element_text(size = 5))
-plot_3 <- ggplot(expenditure) +
-  geom_point(aes(x = X3, y = Y)) +
-  xlab("People per thousand residing in urban areas") +
-  ylab("Per capita expenditure on public education") +
-  theme(text = element_text(size = 5))
-plot_4 <- ggplot(expenditure) +
-  geom_point(aes(x = X1, y = X2)) +
-  xlab("Per capita personal income") +
-  ylab("Residents per thousand under 18 years of age") +
-  theme(text = element_text(size = 5))
-plot_5 <- ggplot(expenditure) +
-  geom_point(aes(x = X1, y = X3)) +
-  xlab("Per capita personal income") +
-  ylab("People per thousand residing in urban areas") +
-  theme(text = element_text(size = 5))
-plot_6 <- ggplot(expenditure) +
-  geom_point(aes(x = X2, y = X3)) +
-  xlab("Residents per thousand under 18 years of age") +
-  ylab("People per thousand residing in urban areas") +
-  theme(text = element_text(size = 5))
-
-cowplot::plot_grid(plot_1, plot_2, plot_3, plot_4, plot_5, plot_6, nrow = 3)
+# plot it!
+pairs(~ Y + X1 + X2 + X3, data = expenditure,
+      labels = c("Per capita expenditure\non public education", "Per capita\npersonal income", "Residents per\nthousand under 18", "People per thousand\nin urban areas"),
+      pch = ".",
+      cex = 5,
+      )
 ```
-Scatterplots are the appropriate graph to visualize these relationships. To me, it looks like there is a strong positive correlation between Y (per capita expenditure on public education) and X1 (per capita personal income), a weak positive correlation between Y and X3 (number of people per thousand residing in urban areas), and no correlation between Y and X2 (number of residents per thousand under 18 years of age). Between the X variables, there appears to be a strong positive correlation between X1 and X3, a weak negative relationship between X1 and X2, and what appears to be no relation between X2 and X3.
+A scatterplot matrix is the appropriate graph to visualize these relationships. To me, it looks like there is a strong positive correlation between Y (per capita expenditure on public education) and X1 (per capita personal income), a weak positive correlation between Y and X3 (number of people per thousand residing in urban areas), and no correlation between Y and X2 (number of residents per thousand under 18 years of age). Between the X variables, there appears to be a positive correlation between X1 and X3, a weak negative relationship between X1 and X2, and what appears to be no relation between X2 and X3.
 
 ### Question 5: Write your code in the code chunk and your text answer after the code chunk.
 
