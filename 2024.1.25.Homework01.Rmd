@@ -63,10 +63,10 @@ upper <- xbar + criticalt * s / sqrt(n)
 ### Question 3: Write your code in the code chunk and your text answer after the code chunk.
 
 ```{r}
-# H0: average IQ in the school is higher than 100
-# Ha: average IQ in the school is not higher than 100
+# H0: average IQ in the school is 100
+# Ha: average IQ in the school is higher than 100
 
-results <- t.test(y, alternative = "less", mu = 100, conf.level = 0.95)
+results <- t.test(y, alternative = "greater", mu = 100, conf.level = 0.95)
 ```
 
 The p-value is `r results$p.value`, which is more than 0.05. We therefore **fail
@@ -89,8 +89,32 @@ pairs(~ Y + X1 + X2 + X3, data = expenditure,
       pch = ".",
       cex = 5,
       )
+
+yx1 <- cor(expenditure$Y, expenditure$X1)
+yx2 <- cor(expenditure$Y, expenditure$X2)
+yx3 <- cor(expenditure$Y, expenditure$X3)
+x1x2 <- cor(expenditure$X1, expenditure$X2)
+x1x3 <- cor(expenditure$X1, expenditure$X3)
+x2x3 <- cor(expenditure$X2, expenditure$X3)
 ```
-A scatterplot matrix is the appropriate graph to visualize these relationships. To me, it looks like there is a strong positive correlation between Y (per capita expenditure on public education) and X1 (per capita personal income), a weak positive correlation between Y and X3 (number of people per thousand residing in urban areas), and no correlation between Y and X2 (number of residents per thousand under 18 years of age). Between the X variables, there appears to be a positive correlation between X1 and X3, a weak negative relationship between X1 and X2, and what appears to be no relation between X2 and X3.
+A scatterplot matrix is the appropriate graph to visualize these relationships.
+
+The correlations are as follows:
+
+|    | Y       | X1       | X2       |
+|---:|:---      |:---       |:---      |
+| **X3** | `r yx3` | `r x1x3` | `r x2x3` |
+| **X2** | `r yx2` | `r x1x2` |          |
+| **X1** | `r yx1` |          |          |
+
+There is...
+
+* A moderate positive correlation between Y (per capita expenditure on public education) and X1 (per capita personal income)
+* A weak positive correlation between Y and X3 (number of people per thousand residing in urban areas)
+* A weak negative correlation between Y and X2 (number of residents per thousand under 18 years of age) -- but this is approaching no correlation
+* A moderate positive correlation between X1 and X3
+* A moderate negative relationship between X1 and X2
+* A moderate negative relationship between X2 and X3
 
 ### Question 5: Write your code in the code chunk and your text answer after the code chunk.
 
@@ -106,11 +130,20 @@ A side-by-side boxplot is most appropriate to visualize the relationship between
 
 ```{r}
 ggplot(expenditure) +
+  geom_point(aes(x = X1, y = Y)) +
+  xlab("Per capita personal income") +
+  ylab("Per capita expenditure on public education")
+
+correlation <- cor(expenditure$Y, expenditure$X1)
+
+ggplot(expenditure) +
   geom_point(aes(x = X1, y = Y, color = Region, shape = Region)) +
   xlab("Per capita personal income") +
   ylab("Per capita expenditure on public education") +
   labs(color = "Region")
 ```
 
-Y and X1 seem to have a relatively strong, positive, linear relationship.
+The correlation coefficient between Y and X1 is `r correlation`
+
+Y and X1 seem to have a moderate (almost strong) positive correlation.
 
