@@ -1,0 +1,123 @@
+---
+title: "Lecture04Practice"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r}
+library(car)
+library(carData)
+library(tidyverse)
+summary(Duncan)
+```
+
+```{r}
+# Find the critical t value/t score
+qt(0.025, df=43, lower.tail = F) # df in SLR: n-2
+```
+
+
+```{r}
+y<-Duncan$prestige
+x<-Duncan$income
+
+lm<-lm(y~x)
+summary(lm)
+```
+
+Test non-zero slope
+Ho: $\beta_1$=2 vs Ha: $\beta_1 \neq$ 2
+
+**hypotheses must be about the population**
+
+```{r}
+names(lm)
+lm$coefficients
+lm$coefficients[2]
+
+tteststatistic <- (lm$coefficients[2] - 2) / 0.1074 # (beta_1_hat - beta_1) / SE_beta_1_hat
+
+pvalue <- 2 * pt(tteststatistic, 43, lower.tail = T) # 2 * pt(t, df, [lower.tail = T -- WHY?])
+pvalue
+```
+
+Confidence interval
+
+```{r}
+#method 1
+c<-qt(0.025,43,lower.tail = F) # Find the critical value for 95% CI
+
+U<-lm$coefficients[2] + c * 0.1074
+L<-lm$coefficients[2] - c * 0.1074
+U
+L
+
+#method 2
+confint(lm, level = 0.9)
+```
+
+```{r}
+summary(lm)
+linearHypothesis(lm, "x=2")
+# x = 2 indicates our hypothesis: the true beta (regression coefficient) for the x variable in our lm model is 2
+
+# Whereas t test performs the test for an individual coefficient, linearHypothesis performs F test and allows us to test more sophisticated hypothesis testing such as whether difference between the coefficients is significant.
+```
+
+
+```{r}
+
+# Predict mean Y given x = 50
+predict(lm(y~x), newdata = data.frame(x=50), se.fit = TRUE, interval = "confidence") # predict(regression, newdata=newdata, se.fit = TRUE [bc we want to know the SE of the predicted value], interval = "confidence")
+
+# Predict an individual Y given x = 50
+predict(lm(y~x), newdata = data.frame(x=50), se.fit = TRUE, interval = "prediction")
+
+# generate predicted y values at multiple x variables
+new<-data.frame(x=seq(10,90,5)) # seq() generates numbers from 10 to 90 by increments of 5
+
+prep.m<-predict(lm(y~x), newdata = new, interval = "confidence")
+prep.m
+prep.p<-predict(lm(y~x), newdata = new,  interval = "prediction")
+prep.p
+
+cbind(prep.m, prep.p)
+
+matplot(new$x, cbind(prep.m, prep.p[,-1]), # in order to avoid having two `fit` columns, we will extract the `fit` column from prep.p
+        lty = c(1,2,2,3,3), type = "l", col = c("black", "blue", "blue", "red", "red"), ylab = "predicted y") # lty = line type, type = line, ylab = y axis label
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

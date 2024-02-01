@@ -1,0 +1,127 @@
+---
+title: "HW2"
+author: "This author section should be left blank empty for anonymous grading"
+date: "Due 2024-02-06"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+# Here you load the necessary packages.  
+library(tidyverse)
+
+
+# Here you enter your name: Soju Hokari - It won't show in the .html file but show in the .rmd file. 
+```
+
+## Instruction: 
+Once you have completed your answer, please submit both the knitted .html file and the .rmd file together.
+
+### Question 1: Write your code in the code chunk and your text answer after the code chunk.
+
+```{r}
+fruitfly <- read.csv("datasets/fruitfly.csv")
+summary(fruitfly)
+```
+The mean lifespan of all of the fruitflies is `r mean(fruitfly$lifespan)` days. The standard deviation of lifespan is `r sd(fruitfly$lifespan)` days.
+
+```{r}
+ggplot(fruitfly) +
+  geom_histogram(binwidth = 5, aes(x = lifespan)) +
+  ylab("Count") +
+  xlab("Lifespan (days)")
+```
+
+The distribution of the overall lifespan looks to be relatively normal.
+
+
+### Question 2: Write your code in the code chunk and your text answer after the code chunk.
+
+```{r}
+ggplot(fruitfly) +
+  geom_point(aes(x = thorax, y = lifespan)) +
+  ylab("Lifespan (days)") +
+  xlab("Length of thorax (mm)")
+
+cor <- cor(fruitfly$thorax, fruitfly$lifespan)
+```
+It looks like there is a linear relationship. The correlation coefficient is `r cor`, which indicates that there is a moderate positive relationship between these two variables.
+
+### Question 3: Write your code in the code chunk and your text answer after the code chunk.
+
+```{r}
+y <- fruitfly$lifespan
+x <- fruitfly$thorax
+lm <- lm(y ~ x)
+summary(lm)
+```
+
+The slope of the model is `r lm$coefficients[2]`. This slope implies that for every 1 additional mm in length of a fly's thorax, the lifespan of that fly will be `r lm$coefficients[2]` days longer.
+
+### Question 4: Write your code in the code chunk and your text answer after the code chunk.
+
+H0: slope ($\beta_1$) == 0
+Ha: slope ($\beta_1$) != 0
+
+```{r}
+slope_standard_error <- summary(lm)$coefficients[2, 2]
+
+t_statistic <- (lm$coefficients[2] - 0) / slope_standard_error
+
+p_value <- 2 * pt(t_statistic, length(fruitfly$lifespan) - 2, lower.tail = F)
+```
+
+The p-value is `r p_value`, which is less than 0.05, so we can reject the null hypothesis, meaning that the slope is NOT zero, and the linear relationship between _lifespan_ and _thorax_ is **significant**.
+
+### Question 5: Write your code in the code chunk and your text answer after the code chunk.
+
+```{r}
+# Using the formula:
+critical_value <- qt(0.05, length(fruitfly$lifespan) - 2,lower.tail = F) # Find the critical value for 95% CI
+
+upper <- lm$coefficients[2] + critical_value * slope_standard_error
+lower <- lm$coefficients[2] - critical_value * slope_standard_error
+
+# Using the R function `confint()`
+confidence_interval <- confint(lm, level = 0.9)
+```
+
+Using the formula, the 90% confidence interval is [`r lower`, `r upper`].
+
+Using the function, the 90% confidence interval is [`r confidence_interval[2, 1]`, `r confidence_interval[2, 2]`]
+
+### Question 6: Write your code in the code chunk and your text answer after the code chunk.
+
+
+```{r}
+# Find individual fruitfly lifespan with thorax value 0.8 mm
+individual <- predict(lm, newdata = data.frame(x = 0.8), se.fit = TRUE, interval = "prediction")
+
+# Find average fruitfly lifespan with thorax value 0.8 mm
+confidence <- predict(lm, newdata = data.frame(x = 0.8), se.fit = TRUE, interval = "confidence")
+```
+
+The predicted value of lifespan is `r individual$fit[1]` days.
+
+The prediction interval for an individual fruitfly's lifespan with a 0.8mm thorax is [`r individual$fit[2]` days, `r individual$fit[3]` days].
+
+The confidence interval for the average fruitfly's lifespan with a 0.8mm thorax is [`r confidence$fit[2]` days, `r confidence$fit[3]` days].
+
+### Question 7: Write your code in the code chunk and your text answer after the code chunk.
+
+```{r}
+x_values <- data.frame(x = seq(0.6,1,0.01)) # seq() generates numbers from 10 to 90 by increments of 5
+
+confidence_intervals <- predict(lm, newdata = x_values, interval = "confidence")
+prediction_intervals <- predict(lm, newdata = x_values, interval = "prediction")
+
+matplot(
+  x_values$x,
+  cbind(confidence_intervals, prediction_intervals[,-1]), # in order to avoid having two `fit` columns, we will extract the `fit` column from prediction_intervals
+  lty = c(1,2,2,3,3),
+  type = "l",
+  col = c("black", "blue", "blue", "red", "red"),
+  ylab = "predicted y"
+) # lty = line type, type = line, ylab = y axis label
+```
