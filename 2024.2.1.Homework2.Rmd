@@ -57,7 +57,7 @@ lm <- lm(y ~ x)
 summary(lm)
 ```
 
-The slope of the model is `r lm$coefficients[2]`. This slope implies that for every 1 additional mm in length of a fly's thorax, the lifespan of that fly will be `r lm$coefficients[2]` days longer.
+The slope of the model is `r lm$coefficients[2]`. This slope implies that for every 1 additional mm in length of a fly's thorax, the lifespan of that fly will be `r lm$coefficients[2]` days longer. Of course, there are no flies in the dataset with a thorax of even 1mm long, so in reality we can only assume this slope to roughly apply to flies that have thorax lengths that are in the dataset (thoraxes between roughly 0.7mm to 0.9mm).
 
 ### Question 4: Write your code in the code chunk and your text answer after the code chunk.
 
@@ -78,7 +78,7 @@ The p-value is `r p_value`, which is less than 0.05, so we can reject the null h
 
 ```{r}
 # Using the formula:
-critical_value <- qt(0.05, length(fruitfly$lifespan) - 2,lower.tail = F) # Find the critical value for 95% CI
+critical_value <- qt(0.05, length(fruitfly$lifespan) - 2, lower.tail = F) # Find the critical value for 95% CI
 
 upper <- lm$coefficients[2] + critical_value * slope_standard_error
 lower <- lm$coefficients[2] - critical_value * slope_standard_error

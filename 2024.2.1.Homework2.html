@@ -423,7 +423,10 @@ summary(lm)</code></pre>
 ## F-statistic: 83.76 on 1 and 123 DF,  p-value: 1.497e-15</code></pre>
 <p>The slope of the model is 144.333101. This slope implies that for
 every 1 additional mm in length of a fly’s thorax, the lifespan of that
-fly will be 144.333101 days longer.</p>
+fly will be 144.333101 days longer. Of course, there are no flies in the
+dataset with a thorax of even 1mm long, so in reality we can only assume
+this slope to roughly apply to flies that have thorax lengths that are
+in the dataset (thoraxes between roughly 0.7mm to 0.9mm).</p>
 </div>
 <div id="question-4-write-your-code-in-the-code-chunk-and-your-text-answer-after-the-code-chunk." class="section level3">
 <h3>Question 4: Write your code in the code chunk and your text answer
@@ -444,7 +447,7 @@ linear relationship between <em>lifespan</em> and <em>thorax</em> is
 <h3>Question 5: Write your code in the code chunk and your text answer
 after the code chunk.</h3>
 <pre class="r"><code># Using the formula:
-critical_value &lt;- qt(0.05, length(fruitfly$lifespan) - 2,lower.tail = F) # Find the critical value for 95% CI
+critical_value &lt;- qt(0.05, length(fruitfly$lifespan) - 2, lower.tail = F) # Find the critical value for 95% CI
 
 upper &lt;- lm$coefficients[2] + critical_value * slope_standard_error
 lower &lt;- lm$coefficients[2] - critical_value * slope_standard_error
