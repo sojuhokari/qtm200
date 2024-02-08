@@ -1,0 +1,70 @@
+---
+title: "LecturePractice05 - MLR Estimation"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(car)
+```
+
+
+```{r}
+??Prestige
+lm1<-lm(prestige~income, data=Prestige)
+summary(lm1)
+```
+income is a significant indicator of the prestige
+
+
+```{r}
+lm2<-lm(prestige~income+education, data=Prestige)
+summary(lm2)
+```
+
+income and education are both significant predictors of prestige
+
+# Partial regression plot to check education effect
+```{r}
+lm3 <- lm(education~income, data = Prestige)
+
+plot(lm1$residuals~lm3$residuals, ylab = "residuals of regressing income on prestige\n(part of prestige that is not accounted for by income)", xlab = "residuals of regressing education on income\n(part of income that is not accounted for by education)")
+
+# Run a linear model to regress lm1$residuals and lm3$residals
+summary(lm(lm1$residuals~lm3$residuals))
+```
+The p-value is small enough to reject the null (the null is that there is no linear relationship between `lm1$residuals` and `lm3$residuals`). So we should include the education variable.
+
+# plot with giving a predictor value in the lecture 5
+```{r}
+clock <- read.table("http://www.statsci.org/data/general/auction.txt", header = T)
+
+# We can use fitted lines to show the relationship between two linear variables in 2d (instead of a plane)
+# price^ = B0^ + B1^ * Bidder + B2^ * Age (fitted model)
+# The above is a fitted plane. But if we fix one variable at a constant level, then we can represent it in 2D!
+
+lm.out1 <- lm(Price~Bidders+Age, data = clock)
+lm.out1$coefficients
+
+plot(Price~Bidders, data = clock)
+clock$Age # We will choose age = 120, age = 150, age = 170
+
+plot(Price~Bidders, data = clock)
+abline(lm.out1$coefficients[1] + 120 * lm.out1$coefficients[3], lm.out1$coefficients[2], col = 1)
+abline(lm.out1$coefficients[1] + 150 * lm.out1$coefficients[3], lm.out1$coefficients[2], col = 2)
+abline(lm.out1$coefficients[1] + 170 * lm.out1$coefficients[3], lm.out1$coefficients[2], col = 4)
+legend(x=12,y=2000, c("Age=120","Age=150","Age=170"),col=c(1,2,4),pch=c(15,16,17))
+
+plot(Price~Bidders, data = clock)
+for (i in c(120, 130, 140, 150, 160, 170)) {
+  abline(lm.out1$coefficients[1] + i * lm.out1$coefficients[3], lm.out1$coefficients[2], col = 1)
+}
+legend(x = 12, y = 2000, c("Age=120", "Age=130", "Age=140", "Age=150", "Age=160", "Age=170"), col=c(1, 2, 4, 5, 6, 7), pch=c(15, 16, 17, 18, 19, 20))
+
+
+```
+
+So B0^ = `r lm.out1$coefficients[1]`, B1^ = `r lm.out1$coefficients[2]`, and B2^ = `r lm.out1$coefficients[3]`.
+> price^ = B0^ + B1^ * Bidder + B2^ * Age
+
+
