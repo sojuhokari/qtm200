@@ -1,0 +1,126 @@
+---
+title: "HW3"
+author: "This author section should be left blank empty for anonymous grading"
+date: "Due 2024-02-15"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+# Here you load the necessary packages.
+# Here you enter your name: Soju Hokari - It won't show in the .html file but show in the .rmd file.
+```
+
+## Instruction: 
+Once you have completed your answer, please submit both the knitted .html file and the .rmd file together.
+
+### Question 1: Write your code in the code chunk and your text answer after the code chunk.
+
+```{r}
+# Import the data set
+advertising <- read.csv("datasets/advertising.csv")
+
+# Get correlation matrix
+correlation_matrix <- cor(advertising)
+correlation_matrix
+```
+
+For the three predictors, `radio` and `newspaper` have the strongest linear association, with a correlation coefficient of `r correlation_matrix[3, 4]`.
+
+`TV` has the strongest linear relationship with `sales`. The correlation coefficient is `r correlation_matrix[2, 5]`.
+
+### Question 2: Write your code in the code chunk and your text answer after the code chunk.
+
+```{r}
+lm.sales_on_newspaper_TV <- lm(sales ~ newspaper + TV, data = advertising)
+
+lm.sales_on_newspaper_radio_TV <- lm(sales ~ newspaper + radio + TV, data = advertising)
+
+lm.sales_on_newspaper_TV
+lm.sales_on_newspaper_radio_TV
+```
+
+The signs of the partial coefficients of `newspaper` are different for the two models. One possible reason why is that `newspaper` is less strongly correlated with `sales` than either `radio` or `TV`, and coupling that with the fact that `radio` and `newspaper` have a moderate linear correlation, the effect of `newspaper` as a variable gets lost.
+
+```{r}
+summary(lm.sales_on_newspaper_radio_TV)
+```
+
+H0: $\beta$~newspaper~  = 0   
+Ha: $\beta$~newspaper~  != 0
+
+The p-value for the coefficient $\beta$~newspaper~ is `r summary(lm.sales_on_newspaper_radio_TV)$coefficients[2, 4]`, which is above 0.05. So we fail to reject the null hypothesis, meaning that we fail to prove that the variable `newspaper` is statistically significant to the model.
+
+
+### Question 3: Write your code in the code chunk and your text answer after the code chunk.
+
+```{r}
+lm.sales_on_radio_TV <- lm(sales ~ radio + TV, data = advertising)
+
+lm.sales_on_radio <- lm(sales ~ radio, data = advertising)
+
+plot(lm.sales_on_radio$residuals ~ lm.sales_on_radio_TV$residuals)
+
+lm.regression_residuals <- lm(lm.sales_on_radio$residuals ~ lm.sales_on_radio_TV$residuals)
+
+summary(lm.regression_residuals)
+
+plot(lm.sales_on_radio$residuals ~ lm.sales_on_radio_TV$residuals) +
+  abline(lm.regression_residuals$coefficients[1], lm.regression_residuals$coefficients[2])
+```
+
+$beta$~1~ for the regression line for this partial regression plot is `r lm.regression_residuals$coefficients[2]`, and the p-value for this slope is `r summary(lm.regression_residuals)$coefficients[2, 4]`, which is less than 0.05, so the predictor `TV` is statistically significant, and should be included in the model.
+
+### Question 4: Write your code in the code chunk and your text answer after the code chunk. 
+
+```{r}
+summary(lm.sales_on_radio)
+```
+
+The R^2^ for the regression of `sales` on `radio` *and* `TV` is `r summary(lm.sales_on_radio_TV)$r.squared`, which is more than the R^2^ for the regression of `sales` on `radio`: `r summary(lm.sales_on_radio)$r.squared`.
+
+The same holds true for the adjusted R^2^. The adjusted R^2^ for the regression of `sales` on `radio` *and* `TV` is `r summary(lm.sales_on_radio_TV)$adj.r.squared`, which is more than the adjusted R^2^ for the regression of `sales` on `radio`: `r summary(lm.sales_on_radio)$adj.r.squared`.
+
+These statistics validate our choice in question (3), providing additional support to our decision to include the predictor `TV` in the model.
+
+### Question 5: Write your code in the code chunk and your text answer after the code chunk.
+
+```{r}
+summary(lm.sales_on_radio_TV)
+```
+
+Hypothesis test:   
+H0: $\beta$~radio~ = $\beta$~TV~ = 0   
+Ha: $\beta$~radio~ != 0 OR $\beta$~TV~ != 0
+
+The F-statistic is `r summary(lm.sales_on_radio_TV)$fstatistic`, and the p-value for it is < 2.2{-16}, which is less that 0.05. So at a 95% confidence level, we reject the null hypothesis, meaning that the model is significant.
+
+The partial regression coefficient of `radio` is `r lm.sales_on_radio_TV$coefficients[2]`, which means that for every 1 unit increase in radio advertising, there is a `r lm.sales_on_radio_TV$coefficients[2]` unit increase in sales.
+
+### Question 6: Write your code in the code chunk and your text answer after the code chunk.
+
+```{r}
+summary(lm.sales_on_radio_TV)
+lm.sales_on_radio_TV_TVradio <- lm(sales ~ radio + TV + TV:radio, data = advertising)
+summary(lm.sales_on_radio_TV_TVradio)
+```
+
+The R^2^ for the regression of `sales` on `radio` and `TV` is `r summary(lm.sales_on_radio_TV)$r.squared`, which is less than the R^2^ for the regression of `sales` on `radio` and `TV` and the interaction term between `TV` and `radio`: `r summary(lm.sales_on_radio_TV_TVradio)$r.squared`.
+
+The same holds true for the adjusted R^2^. The adjusted R^2^ for the regression of `sales` on `radio` and `TV` is `r summary(lm.sales_on_radio_TV)$adj.r.squared`, which is less than the adjusted R^2^ for the regression of `sales` on `radio` and `TV` and the interaction term between `TV` and `radio`: `r summary(lm.sales_on_radio_TV_TVradio)$adj.r.squared`.
+
+These statistics provide evidence that the second model (the one that includes `TV:radio`) is better.
+
+F test:
+
+H0: $\beta$~`TV:radio`~ = 0
+Ha: $\beta$~`TV:radio`~ != 0
+
+```{r}
+anova <- anova(lm.sales_on_radio_TV, lm.sales_on_radio_TV_TVradio)
+anova
+```
+
+The f-statistic is `r anova$F[2]` and the p-value is `r anova[["Pr(>F)"]][2]`, which is less than 0.05, so we can reject the null hypothesis. This means we should include the interaction term `TV:radio` in the model.
+
