@@ -485,6 +485,26 @@ included in the model.</p>
 <div id="question-4-write-your-code-in-the-code-chunk-and-your-text-answer-after-the-code-chunk." class="section level3">
 <h3>Question 4: Write your code in the code chunk and your text answer
 after the code chunk.</h3>
+<pre class="r"><code>summary(lm.sales_on_radio_TV)</code></pre>
+<pre><code>## 
+## Call:
+## lm(formula = sales ~ radio + TV, data = advertising)
+## 
+## Residuals:
+##     Min      1Q  Median      3Q     Max 
+## -8.7977 -0.8752  0.2422  1.1708  2.8328 
+## 
+## Coefficients:
+##             Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)  2.92110    0.29449   9.919   &lt;2e-16 ***
+## radio        0.18799    0.00804  23.382   &lt;2e-16 ***
+## TV           0.04575    0.00139  32.909   &lt;2e-16 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Residual standard error: 1.681 on 197 degrees of freedom
+## Multiple R-squared:  0.8972, Adjusted R-squared:  0.8962 
+## F-statistic: 859.6 on 2 and 197 DF,  p-value: &lt; 2.2e-16</code></pre>
 <pre class="r"><code>summary(lm.sales_on_radio)</code></pre>
 <pre><code>## 
 ## Call:
@@ -544,8 +564,8 @@ after the code chunk.</h3>
 H0: <span class="math inline">\(\beta\)</span><sub>radio</sub> = <span class="math inline">\(\beta\)</span><sub>TV</sub> = 0<br />
 Ha: <span class="math inline">\(\beta\)</span><sub>radio</sub> != 0 OR
 <span class="math inline">\(\beta\)</span><sub>TV</sub> != 0</p>
-<p>The F-statistic is 859.6177183, 2, 197, and the p-value for it is
-&lt; 2.2{-16}, which is less that 0.05. So at a 95% confidence level, we
+<p>The F-statistic is 859.6177183, and the p-value for it is &lt;
+2.2{-16}, which is less that 0.05. So at a 95% confidence level, we
 reject the null hypothesis, meaning that the model is significant.</p>
 <p>The partial regression coefficient of <code>radio</code> is
 0.1879942, which means that for every 1 unit increase in radio

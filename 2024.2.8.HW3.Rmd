@@ -75,6 +75,7 @@ $beta$~1~ for the regression line for this partial regression plot is `r lm.regr
 ### Question 4: Write your code in the code chunk and your text answer after the code chunk. 
 
 ```{r}
+summary(lm.sales_on_radio_TV)
 summary(lm.sales_on_radio)
 ```
 
@@ -94,7 +95,7 @@ Hypothesis test:
 H0: $\beta$~radio~ = $\beta$~TV~ = 0   
 Ha: $\beta$~radio~ != 0 OR $\beta$~TV~ != 0
 
-The F-statistic is `r summary(lm.sales_on_radio_TV)$fstatistic`, and the p-value for it is < 2.2{-16}, which is less that 0.05. So at a 95% confidence level, we reject the null hypothesis, meaning that the model is significant.
+The F-statistic is `r summary(lm.sales_on_radio_TV)$fstatistic[1]`, and the p-value for it is < 2.2{-16}, which is less that 0.05. So at a 95% confidence level, we reject the null hypothesis, meaning that the model is significant.
 
 The partial regression coefficient of `radio` is `r lm.sales_on_radio_TV$coefficients[2]`, which means that for every 1 unit increase in radio advertising, there is a `r lm.sales_on_radio_TV$coefficients[2]` unit increase in sales.
 
