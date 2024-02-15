@@ -1,0 +1,81 @@
+---
+title: "Lecture06Practice - MLR Inference"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(car)
+```
+
+
+## 1. Significance tests: Overall F test, partial F test, and individual t test.
+
+Working on the dataset Prestige
+```{r}
+lmfull <- lm(prestige ~ income + education, data = Prestige)
+summary(lmfull)
+
+# Interpretation of the coefficient estimate: While education is held at a
+#       constant level, q additional dollar increase in income is associated
+#       with an increase in mean prestige score of 0.00136.
+# 1000 increase in income ~ 0.136 increase in prestige score
+# 1 year increase in education is associated with an increase in mean prestige
+#       score of 4.13, while other variables are held at a constant level.
+```
+
+```{r}
+# We're not going to use the ANOVA functions...
+# IGNORE THE FOLLOWING.
+anova(lmfull)
+Anova(lmfull, type = "II")
+Anova(lmfull, type = "III")
+```
+
+## Overall F-test
+
+$\beta
+
+```{r}
+lmfull <- lm(prestige ~ income + education, data = Prestige)
+lmnull <- lm(prestige ~ 1, data = Prestige) # Using one variable as a constant
+#                                               to model the null hypothesis
+summary(lmnull)
+
+# Put the two models together in ANOVA
+anova(lmnull, lmfull) # overall F test: comparing the full model and the null
+#                                           model
+```
+
+Given the p-value, we can reject the null. So at least one of these predictors are significant predictors in the model.
+Another way to perform overall F-test: Run summary of lmfull:
+
+```{r}
+summary(lmfull)
+```
+
+The bottom line has f-statistics, which tells us the same result as the ANOVA above.
+
+## Partial F test
+
+Full model: y = $\beta$~0~ + $\beta$~education~X~education~ + $\beta$~income~X~income~ + $\epsilon$
+
+H0: $\beta$~income~ = 0 (income is a significant predictor)
+
+So the reduced model is y = $\beta$~0~ + $\beta$~education~X~education~ + $\epsilon$
+
+```{r}
+# test coefficient of income
+lmreduced <- lm(prestige ~ education, data = Prestige)
+
+
+anova(lmreduced, lmfull) # partial F test: comparing the full model and the
+#                                           reduced model
+
+summary(lmfull) # individual t test: for one slope
+```
+
+F-statistic is 36.856 and P-value is 2.355e-8, so we reject the null. Income is a significant predictor variable.
+
+
+

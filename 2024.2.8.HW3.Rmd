@@ -102,9 +102,8 @@ The partial regression coefficient of `radio` is `r lm.sales_on_radio_TV$coeffic
 ### Question 6: Write your code in the code chunk and your text answer after the code chunk.
 
 ```{r}
-summary(lm.sales_on_radio_TV)
-lm.sales_on_radio_TV_TVradio <- lm(sales ~ radio + TV + TV:radio, data = advertising)
-summary(lm.sales_on_radio_TV_TVradio)
+lm.reduced <- lm.sales_on_radio_TV
+lm.full <- lm(sales ~ radio + TV + TV:radio, data = advertising)
 ```
 
 The R^2^ for the regression of `sales` on `radio` and `TV` is `r summary(lm.sales_on_radio_TV)$r.squared`, which is less than the R^2^ for the regression of `sales` on `radio` and `TV` and the interaction term between `TV` and `radio`: `r summary(lm.sales_on_radio_TV_TVradio)$r.squared`.
@@ -119,7 +118,7 @@ H0: $\beta$~`TV:radio`~ = 0
 Ha: $\beta$~`TV:radio`~ != 0
 
 ```{r}
-anova <- anova(lm.sales_on_radio_TV, lm.sales_on_radio_TV_TVradio)
+anova <- anova(lm.reduced, lm.full)
 anova
 ```
 
