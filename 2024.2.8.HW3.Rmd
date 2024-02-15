@@ -56,25 +56,36 @@ The p-value for the coefficient $\beta$~newspaper~ is `r summary(lm.sales_on_new
 ### Question 3: Write your code in the code chunk and your text answer after the code chunk.
 
 ```{r}
-lm.sales_on_radio_TV <- lm(sales ~ radio + TV, data = advertising)
-
 lm.sales_on_radio <- lm(sales ~ radio, data = advertising)
 
-plot(lm.sales_on_radio$residuals ~ lm.sales_on_radio_TV$residuals)
+lm.tv_on_radio <- lm(TV ~ radio, data = advertising)
 
-lm.regression_residuals <- lm(lm.sales_on_radio$residuals ~ lm.sales_on_radio_TV$residuals)
+plot(lm.sales_on_radio$residuals ~ lm.tv_on_radio$residuals)
+
+lm.regression_residuals <- lm(
+  lm.sales_on_radio$residuals ~
+    lm.tv_on_radio$residuals
+)
 
 summary(lm.regression_residuals)
 
-plot(lm.sales_on_radio$residuals ~ lm.sales_on_radio_TV$residuals) +
-  abline(lm.regression_residuals$coefficients[1], lm.regression_residuals$coefficients[2])
+plot(lm.sales_on_radio$residuals ~ lm.tv_on_radio$residuals) +
+  abline(
+    lm.regression_residuals$coefficients[1],
+    lm.regression_residuals$coefficients[2]
+  )
 ```
 
-$beta$~1~ for the regression line for this partial regression plot is `r lm.regression_residuals$coefficients[2]`, and the p-value for this slope is `r summary(lm.regression_residuals)$coefficients[2, 4]`, which is less than 0.05, so the predictor `TV` is statistically significant, and should be included in the model.
+$beta$~1~ for the regression line for this partial regression plot is 
+`r lm.regression_residuals$coefficients[2]`, and the p-value for this slope is 
+`r summary(lm.regression_residuals)$coefficients[2, 4]`, which is less than 
+0.05, so the predictor `TV` is statistically significant, and should be 
+included in the model.
 
 ### Question 4: Write your code in the code chunk and your text answer after the code chunk. 
 
 ```{r}
+lm.sales_on_radio_TV <- lm(sales ~ radio + TV, data = advertising)
 summary(lm.sales_on_radio_TV)
 summary(lm.sales_on_radio)
 ```
@@ -106,9 +117,9 @@ lm.reduced <- lm.sales_on_radio_TV
 lm.full <- lm(sales ~ radio + TV + TV:radio, data = advertising)
 ```
 
-The R^2^ for the regression of `sales` on `radio` and `TV` is `r summary(lm.sales_on_radio_TV)$r.squared`, which is less than the R^2^ for the regression of `sales` on `radio` and `TV` and the interaction term between `TV` and `radio`: `r summary(lm.sales_on_radio_TV_TVradio)$r.squared`.
+The R^2^ for the regression of `sales` on `radio` and `TV` is `r summary(lm.reduced)$r.squared`, which is less than the R^2^ for the regression of `sales` on `radio` and `TV` and the interaction term between `TV` and `radio`: `r summary(lm.full)$r.squared`.
 
-The same holds true for the adjusted R^2^. The adjusted R^2^ for the regression of `sales` on `radio` and `TV` is `r summary(lm.sales_on_radio_TV)$adj.r.squared`, which is less than the adjusted R^2^ for the regression of `sales` on `radio` and `TV` and the interaction term between `TV` and `radio`: `r summary(lm.sales_on_radio_TV_TVradio)$adj.r.squared`.
+The same holds true for the adjusted R^2^. The adjusted R^2^ for the regression of `sales` on `radio` and `TV` is `r summary(lm.reduced)$adj.r.squared`, which is less than the adjusted R^2^ for the regression of `sales` on `radio` and `TV` and the interaction term between `TV` and `radio`: `r summary(lm.full)$adj.r.squared`.
 
 These statistics provide evidence that the second model (the one that includes `TV:radio`) is better.
 
