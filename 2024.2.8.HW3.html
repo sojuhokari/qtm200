@@ -387,7 +387,10 @@ correlation coefficient of 0.3541038.</p>
 after the code chunk.</h3>
 <pre class="r"><code>lm.sales_on_newspaper_TV &lt;- lm(sales ~ newspaper + TV, data = advertising)
 
-lm.sales_on_newspaper_radio_TV &lt;- lm(sales ~ newspaper + radio + TV, data = advertising)
+lm.sales_on_newspaper_radio_TV &lt;- lm(
+  sales ~ newspaper + radio + TV,
+  data = advertising
+)
 
 lm.sales_on_newspaper_TV</code></pre>
 <pre><code>## 
@@ -407,11 +410,8 @@ lm.sales_on_newspaper_TV</code></pre>
 ##    2.938889    -0.001037     0.188530     0.045765</code></pre>
 <p>The signs of the partial coefficients of <code>newspaper</code> are
 different for the two models. One possible reason why is that
-<code>newspaper</code> is less strongly correlated with
-<code>sales</code> than either <code>radio</code> or <code>TV</code>,
-and coupling that with the fact that <code>radio</code> and
-<code>newspaper</code> have a moderate linear correlation, the effect of
-<code>newspaper</code> as a variable gets lost.</p>
+<code>newspaper</code> may not be independent of <code>radio</code>,
+i.e. there might be correlation between the two variables.</p>
 <pre class="r"><code>summary(lm.sales_on_newspaper_radio_TV)</code></pre>
 <pre><code>## 
 ## Call:
@@ -452,8 +452,7 @@ lm.tv_on_radio &lt;- lm(TV ~ radio, data = advertising)
 plot(lm.sales_on_radio$residuals ~ lm.tv_on_radio$residuals)
 
 lm.regression_residuals &lt;- lm(
-  lm.sales_on_radio$residuals ~
-    lm.tv_on_radio$residuals
+  lm.sales_on_radio$residuals ~ lm.tv_on_radio$residuals
 )
 
 summary(lm.regression_residuals)</code></pre>
@@ -569,14 +568,15 @@ after the code chunk.</h3>
 ## F-statistic: 859.6 on 2 and 197 DF,  p-value: &lt; 2.2e-16</code></pre>
 <p>Hypothesis test:<br />
 H0: <span class="math inline">\(\beta\)</span><sub>radio</sub> = <span class="math inline">\(\beta\)</span><sub>TV</sub> = 0<br />
-Ha: <span class="math inline">\(\beta\)</span><sub>radio</sub> != 0 OR
-<span class="math inline">\(\beta\)</span><sub>TV</sub> != 0</p>
+Ha: <span class="math inline">\(\beta\)</span><sub>radio</sub> != 0
+AND/OR <span class="math inline">\(\beta\)</span><sub>TV</sub> != 0</p>
 <p>The F-statistic is 859.6177183, and the p-value for it is &lt;
 2.2{-16}, which is less that 0.05. So at a 95% confidence level, we
 reject the null hypothesis, meaning that the model is significant.</p>
 <p>The partial regression coefficient of <code>radio</code> is
-0.1879942, which means that for every 1 unit increase in radio
-advertising, there is a 0.1879942 unit increase in sales.</p>
+0.1879942, which means that when <code>TV</code> is held constant, for
+every 1 unit increase in radio advertising, there is a 0.1879942 unit
+increase in sales.</p>
 </div>
 <div id="question-6-write-your-code-in-the-code-chunk-and-your-text-answer-after-the-code-chunk." class="section level3">
 <h3>Question 6: Write your code in the code chunk and your text answer
