@@ -1,0 +1,120 @@
+---
+title: "Lec07(Dummy variable)Practice"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r}
+library(car)
+library(carData)
+library(ggplot2)
+library(tidyr)
+```
+
+
+
+## 1. Import data
+```{r}
+credit <- read.csv("datasets/Credit.csv")
+credit
+```
+
+## 2. Model with a categorical variable
+```{r}
+# standard practice:
+credit$Gender <- factor(credit$Gender, levels = c("Female", "Male"))
+
+lm1 <- lm(Balance ~ Gender + Income, data = credit) # additive model: same slope for different group
+summary(lm1)
+coef <- lm1$coefficients
+coef
+```
+
+## 3.  Make a plot to show parallel lines 
+```{r}
+## basic R plot function
+# type = n makes it so the points don't show
+plot(credit$Income, credit$Balance, type = "n")
+points(
+  credit$Income[credit$Gender == "Female"],
+  credit$Balance[credit$Gender == "Female"],
+  col = 2
+)
+points(
+  credit$Income[credit$Gender == "Male"],
+  credit$Balance[credit$Gender == "Male"],
+  col = 4
+)
+abline(coef[1] + coef[2], coef[3], col = 4)
+abline(coef[1], coef[3], col = 2)
+
+## ggplot
+ggplot(credit, aes(x = Income, y = Balance)) +
+  geom_point(aes(col = Gender)) +
+  geom_abline(slope = coef[3], intercept = coef[1] + coef[2]) +
+  geom_abline(slope = coef[3], intercept = coef[1], col = "red")
+```
+
+
+## 4. Make a plot to show unparallel lines
+
+```{r}
+# interactive model: different slopes for different groups.
+lm2 <- lm(Balance ~ Income + Gender + Gender:Income, data = credit)
+summary(lm2)
+coef <- lm2$coefficients
+
+contrasts(factor(credit$Gender))
+
+## old school plot
+plot(credit$Income, credit$Balance, type = "n")
+points(
+  credit$Income[credit$Gender == "Female"],
+  credit$Balance[credit$Gender == "Female"],
+  col = 2
+)
+points(
+  credit$Income[credit$Gender == "Male"],
+  credit$Balance[credit$Gender == "Male"],
+  col = 4
+)
+abline(coef[1], coef[2], col = 2) # Female group
+abline(coef[1] + coef[3], coef[2] + coef[4], col = 4) # Male group
+
+
+## ggplot
+ggplot(credit, aes(x = Income, y = Balance)) +
+  geom_point(aes(col = Gender)) +
+  geom_abline(slope = coef[2] + coef[4], intercept = coef[1] + coef[3]) +
+  geom_abline(slope = coef[2], intercept = coef[1], col = "red")
+```
+
+## 5. For significance tests:
+
+use partial F test to check the significance of categorical variable or interaction term.
+
+```{r}
+anova(lm1, lm2) # significance test for interaction term
+```
+
+
+```{r}
+Prestige <- drop_na(Prestige)
+
+lm3 <- lm(prestige ~ type + income, data = Prestige)
+summary(lm3)
+
+
+lm4 <- lm(prestige ~ income, data = Prestige)
+
+# Null hypothesis: the two dummy vars are not significant predictors
+anova(lm4, lm3)
+# From the ANOVA, we reject the null. So at least one dummy var is significant.
+
+contrasts(Prestige$type)
+```
+

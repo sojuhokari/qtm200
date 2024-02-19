@@ -1,0 +1,111 @@
+---
+title: "HW4"
+author: "This author section should be left blank empty for anonymous grading"
+date: "Due 2024-02-28"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+# Here you load the necessary packages.
+# Here you enter your name: Soju Hokari - It won't show in the .html file but show in the .rmd file.
+library(ggplot2)
+```
+
+## Instruction: 
+Once you have completed your answer, please submit both the knitted .html file and the .rmd file together.
+
+### Question 1 (a) 
+
+```{r}
+forbes500 <- read.csv("datasets/Forbes500.csv")
+forbes500$log_Sales <- log(forbes500$Sales)
+forbes500$log_Assets <- log(forbes500$Assets)
+ggplot(data = forbes500, aes(x = log_Assets, y = log_Sales)) +
+    geom_point(aes(color = sector))
+```
+
+### Question 1 (b) 
+
+```{r}
+# i. lm_interaction
+```
+
+
+### Question 1 (c) 
+
+```{r}
+# i.
+lm_additive <- lm(data = forbes500, x = sector, y = log_Assets)
+```
+
+
+### Question 1 (d)  
+
+```{r}
+
+```
+
+
+### Question 2 (a) 
+
+```{r}
+
+```
+
+
+### Question 2 (b) 
+
+```{r}
+
+```
+
+### Question 2 (c) 
+
+```{r}
+
+```
+
+### Question 2 (d) 
+
+```{r}
+
+```
+
+### Question 2 (e) 
+
+```{r}
+
+```
+
+### Question 2 (f) 
+
+```{r}
+
+```
+
+### Question 3 (a) 
+
+```{r}
+
+```
+
+### Question 3 (b) 
+
+```{r}
+
+```
+
+### Question 3 (c) 
+
+```{r}
+
+```
+
+### Question 3 (d) 
+
+```{r}
+
+```
+
