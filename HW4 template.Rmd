@@ -29,22 +29,69 @@ ggplot(data = forbes500, aes(x = log_Assets, y = log_Sales)) +
 ### Question 1 (b) 
 
 ```{r}
-# i. lm_interaction
+# i. Interaction model
+lm_interaction <- lm(
+    log_Sales ~ log_Assets + sector + log_Assets:sector,
+    data = forbes500
+)
+summary(lm_interaction)
+
+# ii. Additive model
+lm_additive <- lm(log_Sales ~ log_Assets + sector, data = forbes500)
+summary(lm_additive)
+
+# iii. Anova
+anova(lm_additive, lm_interaction)
 ```
 
+F-test: p-value is 0.7992, which is more than 0.05, so we fail to reject the null hypothesis. So the interaction terms are not needed in the model.
 
 ### Question 1 (c) 
 
 ```{r}
-# i.
-lm_additive <- lm(data = forbes500, x = sector, y = log_Assets)
+# i. Fit the additive model
+lm_additive <- lm(data = forbes500, log_Sales ~ sector + log_Assets)
+
+# ii. Fit the simple linear regression model
+lm_simple <- lm(data = forbes500, log_Sales ~ log_Assets)
+
+# iii. anova
+anova(lm_simple, lm_additive)
 ```
 
+F-test: The p-value is < 2.2e-16, which means that we can reject the null hypothesis, so we should include the predictor `sector` in our model.
 
 ### Question 1 (d)  
 
 ```{r}
+contrasts(factor(forbes500$sector))
+```
 
+`Energy` is considered the baseline group.
+
+```{r}
+coef <- lm_additive$coefficients
+
+colors <- c(
+    "red",
+    "orange",
+    "yellow",
+    "green",
+    "blue",
+    "purple",
+    "pink",
+    "black"
+)
+
+ggplot(data = forbes500, aes(x = log_Assets, y = log_Sales)) +
+    geom_point(aes(color = sector)) +
+    geom_abline(slope = coef[9], intercept = coef[1], color = colors[1]) +
+    geom_abline(
+        slope = coef[9],
+        intercept = coef[1] + coef[7],
+        color = colors[7]
+    ) +
+    scale_color_manual(values = colors)
 ```
 
 
