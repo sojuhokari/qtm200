@@ -19,11 +19,23 @@ Once you have completed your answer, please submit both the knitted .html file a
 ### Question 1 (a) 
 
 ```{r}
+colors <- c(
+    "red",
+    "orange",
+    "yellow",
+    "green",
+    "blue",
+    "purple",
+    "pink",
+    "black"
+)
+
 forbes500 <- read.csv("datasets/Forbes500.csv")
 forbes500$log_Sales <- log(forbes500$Sales)
 forbes500$log_Assets <- log(forbes500$Assets)
 ggplot(data = forbes500, aes(x = log_Assets, y = log_Sales)) +
-    geom_point(aes(color = sector))
+    geom_point(aes(color = sector)) +
+    scale_color_manual(values = colors)
 ```
 
 ### Question 1 (b) 
@@ -71,17 +83,6 @@ contrasts(factor(forbes500$sector))
 
 ```{r}
 coef <- lm_additive$coefficients
-
-colors <- c(
-    "red",
-    "orange",
-    "yellow",
-    "green",
-    "blue",
-    "purple",
-    "pink",
-    "black"
-)
 
 ggplot(data = forbes500, aes(x = log_Assets, y = log_Sales)) +
     geom_point(aes(color = sector)) +
