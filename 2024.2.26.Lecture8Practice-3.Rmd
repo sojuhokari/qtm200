@@ -1,0 +1,106 @@
+
+---
+title: "Lecture8Practice"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(car)
+```
+
+
+```{r}
+credit <- read.csv("datasets/Credit.csv")
+
+
+lm <- lm(Balance ~ Gender, data = credit)
+summary(lm)
+
+# The INTERCEPT/BASE GROUP (FEMALE)
+lm$coefficients[1] # group mean (average balance) for Female
+
+# The MALE group – add coefficients 1 and 2
+sum(lm$coefficients[1:2]) # group mean for Male
+
+# Null hypothesis: \beta1 = 0  -> no difference between group means.
+summary(lm)
+# Use the f-statistic and its p-value at the bottom of this summary
+```
+
+Implication of Coding Schemes 
+```{r}
+# Here, we'll get an error: contrasts(credit$Gender)
+class(credit$Gender)
+# so instead, we need to make it into a factor:
+credit$Gender <- factor(credit$Gender, levels = c("Female", "Male"))
+contrasts(credit$Gender)
+
+# change the coding scheme for the categorical variable
+credit$Gender1 <- credit$Gender
+contrasts(credit$Gender1) <- contr.sum(2) # sum to zero constraint
+#                                           using contr.sum(2) means we want
+#                                           contrasts for TWO groups.
+contrasts(credit$Gender1)
+
+
+lm1 <- lm(Balance ~ Gender1, data = credit)
+summary(lm1) # WOAH! estimate coefficient CHANGED, because the coding scheme
+#              change altered the interpretation behind each coefficient.
+
+
+# previous model
+lm$coefficients[1] # group mean (average balance) for Female
+sum(lm$coefficients[1:2]) # group mean for Male
+
+# current model (with sum to zero constraint, new coding scheme)
+sum(lm1$coefficients[1:2]) # group mean (average balance) for Female
+lm1$coefficients[1] - lm1$coefficients[2] # group mean (avg balance) for Male
+
+# WHY? Because lm$coefficients[1] is the OVERALL mean. So we need to add or
+# subtract lm$coefficients[2] to get the means for the groups.
+```
+
+```{r}
+# new data
+
+# Three ways to perform overall F test in one-way anova (if there is any mean
+# difference across the categories)
+lm <- lm(prestige ~ type, data = Duncan)
+
+# 1. See the regression table; look at f-statistic at the bottom.
+summary(lm)
+
+# 2. Perform anova on the fitted model using summary(aov())
+#    This produces an ANOVA table, NOT a regression table.
+summary(aov(lm))
+
+# 3. Perform anova on the fitted model using anova().
+anova(lm)
+```
+We observed that dummy variable coding change alters the coefficient of linear
+regression model. 
+
+Changing dummy variables coding, what happens to anova table?
+
+```{r}
+contrasts(Duncan$type) # original coding scheme
+
+Duncan$type1 <- Duncan$type
+contrasts(Duncan$type1) <- contr.sum(3) # 3 is the number of levels of type,
+#                                         impose sum-to-zero constraint.
+contrasts(Duncan$type1)
+
+lm1 <- lm(prestige ~ type1, data = Duncan)
+summary(lm1) # coefficient changed, because what each coefficient represents
+#              changed.
+
+anova(lm)
+anova(lm1)
+```
+
+Takeaway: Altering the coding scheme of dummy variables changes the coefficients
+in a linear regression model because it modifies what each coefficient
+represents. However, changes in the coding scheme do not affect the ANOVA table,
+including the F-value and p-value, which are related to the results of
+hypothesis testing.

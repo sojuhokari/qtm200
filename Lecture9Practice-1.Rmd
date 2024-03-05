@@ -1,0 +1,188 @@
+---
+title: "Lecture9Practice"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(boot)
+library(car)
+```
+
+Pia's problem
+
+yi = $\beta$1D1 + $\beta$2D2 + $\epsilon$i
+
+```{r}
+m1 <- lm(income ~ type, data = Duncan)
+table(Duncan$type)
+
+anova(m1)
+
+anova(m1)$"Pr(>F)"
+
+# The ANOVA hypothesis here is
+#     H0: beta1 = beta2 = 0
+#         so the factor variable `type` is not a significant part of the model.
+#
+# Test statistic = F = 21.543 -- given the p-value, which is less than 0.01, we
+# can reject the null hypothesis. So at least one of the slopes is not zero.
+
+TukeyHSD(aov(m1)) # Tukey test allows us to do a pairwise difference test
+TukeyHSD(aov(m1))$type # So we see that the prof-bc is significant, wc-bc is
+#                         significant, but wc-prof is not.
+```
+
+```{r}
+library(car)
+library(boot)
+bs <- function(data, indices) {
+  d <- data[indices, ] # allows boot to select sample
+  fit <- anova(lm(income ~ type, data = d))
+  return(fit$"Pr(>F)")
+}
+
+boot.results <- boot(statistic = bs, data = Duncan, R = 1000)
+boot.results
+plot(boot.results)
+mean(boot.results$t, na.rm = T) - mean(boot.results$t0, na.rm = T)
+```
+
+
+```{r}
+library(car)
+library(boot)
+bs1 <- function(data, indices) {
+  d <- data[indices, ] # allows boot to select sample
+  fit <- aov(lm(income ~ type, data = d))
+  return(TukeyHSD(fit)$type)
+}
+
+boot.results1 <- boot(statistic = bs1, data = Duncan, R = 1000)
+boot.results1
+plot(boot.results1, index = 5)
+boot.ci(boot.results1, index = 1)
+```
+
+
+```{r}
+poisons <- poisons
+
+# Using dplyr to group and then calculate the mean for each subgroup
+df <- poisons %>%
+  group_by(treat, poison) %>%
+  summarise(avg = mean(time))
+
+# Using tapply to do the same thing – but it's returned as a table.
+tapply(poisons$time, list(poisons$treat, poisons$poison), mean)
+```
+
+```{r}
+g <- ggplot(poisons, aes(x = poison, y = time)) +
+  geom_point(aes(col = treat), position = "jitter") + # Jittering to make it
+  #                                                     legible
+  geom_text(aes(label = treat), position = "jitter") # Adding letter labels
+
+g
+```
+
+
+```{r}
+g + geom_segment(aes(x = poison[1], y = avg[1], xend = poison[2], yend = avg[2]), data = df) +
+  geom_segment(aes(x = poison[2], y = avg[2], xend = poison[3], yend = avg[3]), data = df) +
+  geom_segment(aes(x = poison[4], y = avg[4], xend = poison[5], yend = avg[5]), data = df) +
+  geom_segment(aes(x = poison[5], y = avg[5], xend = poison[6], yend = avg[6]), data = df) +
+  geom_segment(aes(x = poison[7], y = avg[7], xend = poison[8], yend = avg[8]), data = df) +
+  geom_segment(aes(x = poison[8], y = avg[8], xend = poison[9], yend = avg[9]), data = df) +
+  geom_segment(aes(x = poison[10], y = avg[10], xend = poison[11], yend = avg[11]), data = df) +
+  geom_segment(aes(x = poison[11], y = avg[11], xend = poison[12], yend = avg[12]), data = df)
+
+g + geom_line(aes(x = poison, y = avg, group = treat), data = df)
+```
+
+
+```{r}
+# Creates line plots of mean of Y, given two factors
+interaction.plot(poisons$poison, poisons$treat, poisons$time)
+```
+
+```{r}
+# Fitting time to poison+treat+poison:treat
+# Two-way ANOVA! But first, we fit the linear regression
+lm <- lm(time ~ poison + treat + poison:treat, data = poisons)
+contrasts(poisons$poison) # NO SUM TO ZERO
+contrasts(poisons$treat) # NO SUM TO ZERO
+# Because we didn't sum to zero, the intercept is NOT a grand mean.
+summary(lm) # Baseline: (i.e. intercept): avg time of poison1 and treatA
+
+# get the same anova table no matter what because it's a balanced dataset
+anova(lm) # Both treat and poison appear to be significant, but not the
+#           interaction term.
+Anova(lm, type = "II")
+
+summary(aov(time ~ treat + poison + poison:treat, data = poisons))
+
+# partial F test for testing slopes of interaction
+lmadditive <- lm(time ~ poison + treat, data = poisons)
+anova(lmadditive, lm) # So by comparing the additive and full model, we can see
+#                       that the interaction term is in fact not significant.
+
+anova(lm)
+```
+
+
+```{r}
+# APPLY A SUM TO ZERO CONSTRAINT
+poisons$poison1 <- poisons$poison
+contrasts(poisons$poison1) <- contr.sum(3) # the number of levels
+contrasts(poisons$poison1)
+```
+
+```{r}
+# ADD A SUM TO ZERO CONSTRAINT
+poisons$treat1 <- poisons$treat
+contrasts(poisons$treat1) <- contr.sum(4)
+contrasts(poisons$treat1)
+```
+
+
+```{r}
+lm1 <- lm(time ~ poison1 + treat1 + poison1:treat1, data = poisons)
+
+summary(lm1) # Now, the baseline is the grand mean! (our coefficients are
+#               different)
+summary(lm) # This one is NOT summed to zero.
+
+summary(aov(time ~ poison1 + treat1 + poison1:treat1, data = poisons))
+anova(lm1)
+Anova(lm1, type = "II")
+Anova(lm1, type = "III") # sum to zero constraint
+# Again, the anova table shows the significance of the factor variable does not
+# change, but what changes is the coefficients associated with the dummy
+# variables.
+```
+
+```{r}
+lm0 <- lm(time ~ poison1 + treat1, data = poisons)
+summary(lm0) # Again, running partial f test
+
+anova(lm0, lm)
+
+anova(lm0)
+summary(aov(time ~ poison1 + treat1, data = poisons))
+Anova(lm0, type = "II")
+```
+
+
+Example 2 in the lecture
+```{r}
+dat <- read.delim("agelearning.txt")
+lmdat <- lm(Words ~ Age * Process, data = dat)
+anova(lmdat)
+
+modeldat <- aov(Words ~ Age * Process, data = dat)
+TukeyHSD(modeldat)
+```
+
+
