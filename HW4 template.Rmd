@@ -11,6 +11,8 @@ knitr::opts_chunk$set(echo = TRUE)
 # Here you load the necessary packages.
 # Here you enter your name: Soju Hokari - It won't show in the .html file but show in the .rmd file.
 library(ggplot2)
+library(car)
+library(dplyr)
 ```
 
 ## Instruction: 
@@ -99,61 +101,180 @@ ggplot(data = forbes500, aes(x = log_Assets, y = log_Sales)) +
 ### Question 2 (a) 
 
 ```{r}
-
+table(Angell$region)
 ```
 
+This is an unbalanced one-way ANOVA, as seen in the table above.
 
 ### Question 2 (b) 
 
 ```{r}
+Angell %>%
+    group_by(region) %>%
+    summarise(mean_mobility = mean(mobility))
+```
 
+The means of the four groups are  as follows:   
+East: 15.9   
+Midwest: 26.1   
+South:32.5   
+West: 37.4
+
+```{r}
+boxplot(Angell$mobility ~ Angell$region)
 ```
 
 ### Question 2 (c) 
 
 ```{r}
-
+leveneTest(Angell$mobility, Angell$region)
 ```
+
+H0: $\sigma$~E~ = $\sigma$~MW~ = $\sigma$~S~ = $\sigma$~W~
+Ha: at least one $\sigma$ is different.
+
+The p-value Levene's Test is 0.07625, which is (barely) higher than 0.05, so we fail to reject the null hypothesis. We conclude that constant variance is reasonable.
+
+This conclusion lines up with what we see in the boxplot: the groups appear to have significantly different variances; however, the variances are close enough that it is plausible that we do fail to reject the null.
 
 ### Question 2 (d) 
 
-```{r}
+#### Baseline = 0 constraint (default)
 
+```{r}
+contrasts(Angell$region)
+summary(aov(data = Angell, mobility ~ region))
 ```
+
+RegSS = 2171.861   
+RSS = 1852.629
+
+```{r}
+lm_mobility_on_region <- lm(data = Angell, mobility ~ region)
+summary(lm_mobility_on_region)
+```
+
+The slope of the dummy regressor for region Southeast (S) is 16.557. This is the difference between the mean of the Southeast region (S)and the mean of the baseline region (E). In our case, the slope of 16.557 means that the estimated mean mobility for cities in the Southeast (S) region is the baseline (E) estimate of 15.900 plus our slope, which equals `r 16.557 + 15.900`
+
+#### Sum-to-zero constraint
+
+```{r}
+contrasts(Angell$region) <- contr.sum(levels(Angell$region)) # Apply sum-to-zero
+contrasts(Angell$region)
+aov(data = Angell, mobility ~ region)
+```
+
+With the sum-to-zero constraint,   
+RegSS = 2171.861   
+RSS = 1852.629
+
+These are the same numbers as with the baseline = 0 constraint!
+
+```{r}
+lm_mobility_on_region_sum_to_zero <- lm(data = Angell, mobility ~ region)
+summary(lm_mobility_on_region_sum_to_zero)
+```
+
+In this case, the constraint we imposed means the dummy variable for region Southeast (S) is region 3. The slope of this dummy regressor is 4.504. This is the difference between the mean for the Southeast region (S) and the grand mean of all regions. In our case, the slope of 4.504 means that the estimated mean mobility for cities in the Southeast (S) region is 4.504 above the grand mean. If we do the math, this comes out to 27.954 + 4.504 = `r 27.954 + 4.504`. This is the same value we got in the previous part!
 
 ### Question 2 (e) 
 
 ```{r}
-
+anova(lm_mobility_on_region)
 ```
+
+H0: $\beta$~regionMW~ = $\beta$~regionS~ = $\beta$~regionW~ = 0   
+Ha: At least one $\beta$ differs.
+
+Here, the p-value for our f test is 1.025e-06. This value is less than 0.05, so we reject the null hypothesis at a confidence level of 0.05. The variable `region` is significant.
 
 ### Question 2 (f) 
 
 ```{r}
-
+TukeyHSD(aov(lm_mobility_on_region))
+plot(TukeyHSD(aov(lm_mobility_on_region)))
 ```
+
+The Tukey test indicates that the differences between the following regions are significant at the 0.05 level:   
+MW-E   
+S-E   
+W-E   
+W-MW   
+
+The following differences are not significant:   
+S-MW   
+W-S
 
 ### Question 3 (a) 
 
 ```{r}
+advertising <- read.csv("datasets/advertising2.csv")
 
+# i. reorder the factor levels
+advertising$Day <- factor(advertising$Day)
+advertising$Section <- factor(advertising$Section)
+levels(advertising$Day) <- c(
+    "Monday",
+    "Tuesday",
+    "Wednesday",
+    "Thursday",
+    "Friday"
+)
+levels(advertising$Day)
+
+# ii. Change to sum-to-zero
+contrasts(advertising$Day) <- contr.sum(levels(advertising$Day))
+contrasts(advertising$Day)
+
+# iii. Load the `car` library
+library(car)
 ```
 
 ### Question 3 (b) 
 
 ```{r}
-
+interaction.plot(advertising$Day, advertising$Section, advertising$Inquiries)
 ```
+
+The two lines on the plot are not parallel. This indicates that there is a significant interaction between the two factors (day and section).
 
 ### Question 3 (c) 
 
 ```{r}
+lm_with_interaction <- lm(
+    data = advertising,
+    Inquiries ~ Day + Section + Day:Section
+)
 
+Anova(lm_with_interaction, type = "III")
 ```
+
+According to this ANOVA table, while the Section variable is not significant, the p-value for f-test for the interaction between Day and Section is 2.493e-05, which is less than 0.05 and therefore significant.
 
 ### Question 3 (d) 
 
 ```{r}
+# To test if there is a significant difference in number of inquiries between
+#   the two section on Monday, we do a multiple comparison.
+advertising$grouping <- advertising$Day:advertising$Section
 
+contrasts(advertising$grouping) <- contr.sum(levels(advertising$grouping))
+
+contrasts(advertising$grouping)
+
+levels(advertising$Day:advertising$Section)
+
+linearHypothesis(
+    lm(data = advertising, Inquiries ~ grouping),
+    c(0, 1, -1, 0, 0, 0, 0, 0, 0, 0),
+    rhs = 0
+)
 ```
+
+In this case, it appears that there is a significant difference in the number of inquiries between the two sections of the pper on Monday. The p-value for the F-statistic is 0.001019, which is less than 0.05.
+
+H0: $\mu$ + $\alpha$~1~ = $\mu$ + $\alpha$~2~   
+Ha: $\mu$ + $\alpha$~1~ != $\mu$ + $\alpha$~2~
+
+We reject the null, which means that the two group means are different.
 
