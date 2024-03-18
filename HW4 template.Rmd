@@ -211,15 +211,14 @@ W-S
 advertising <- read.csv("datasets/advertising2.csv")
 
 # i. reorder the factor levels
-advertising$Day <- factor(advertising$Day)
-advertising$Section <- factor(advertising$Section)
-levels(advertising$Day) <- c(
+advertising$Day <- factor(advertising$Day, levels = c(
     "Monday",
     "Tuesday",
     "Wednesday",
     "Thursday",
     "Friday"
-)
+))
+advertising$Section <- factor(advertising$Section)
 levels(advertising$Day)
 
 # ii. Change to sum-to-zero
