@@ -248,7 +248,7 @@ lm_with_interaction <- lm(
 Anova(lm_with_interaction, type = "III")
 ```
 
-According to this ANOVA table, while the Section variable is not significant, the p-value for f-test for the interaction between Day and Section is 2.493e-05, which is less than 0.05 and therefore significant.
+According to this ANOVA table, the p-value for f-test for the interaction between Day and Section is 2.493e-05, which is less than 0.05 and therefore significant.
 
 ### Question 3 (d) 
 
