@@ -1,0 +1,114 @@
+---
+title: "Logistic"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+```
+
+
+## Import dataset
+```{r}
+CHD<-read.table("chdage.dat.txt", header = T)
+```
+
+## Logistic model 
+
+```{r}
+glm<-glm(CHD~AGE, data=CHD, family = binomial(logit))
+summary(glm)
+```
+
+## Calculate the probability P(Y=1)
+
+```{r}
+## predicted probability P(Y=1) 
+glm.probs<-predict(glm, type = "response")
+glm.probs[1:10]
+
+#OR
+fitted(glm)
+
+
+## probability P(Y=1) when x=30 and x=80
+predict(glm, data.frame(AGE=c(30,80)), type="response") 
+
+
+## log-odds when x=30 and x=80
+predict(glm, data.frame(AGE=c(30,80)), type="link") 
+
+```
+
+## significance test
+
+1. individual slope test (Z test)
+
+```{r}
+summary(glm)
+```
+
+2. all slopes or several slopes (Chisq test)
+
+```{r}
+glm.reduced<-glm(CHD~1, data=CHD, family=binomial(logit))
+anova(glm.reduced, glm, test="Chisq")
+```
+
+## Fitted curve for probability
+
+```{r}
+plot(jitter(CHD, 0.05)~AGE, data=CHD, xlab="AGE", ylab="CHD")
+curve(predict(glm, data.frame(AGE=x), type = "response"), add=TRUE)
+points(CHD$AGE, fitted(glm), pch=16, col="blue")
+```
+
+## Hos-lem Goodness of fit
+
+```{r}
+library(ResourceSelection)
+hl<-hoslem.test(CHD$CHD, fitted(glm), g=10)  
+# Ho: fit is sufficient
+hl
+
+```
+
+# Error rate
+
+```{r}
+dim(CHD)
+glm.pred<-rep(0,100)
+glm.pred[glm.probs>0.5]<-1
+table(glm.pred,CHD$CHD)
+# the model correctly predict
+(45+29)/100
+
+#or
+mean(glm.pred==CHD$CHD)
+
+# training error rate
+1-mean(glm.pred==CHD$CHD)
+```
+
+```{r}
+# train data model
+set.seed(123)
+random<-sample(100,20)
+train<-(CHD$ID!=random)
+test<-CHD[random,]
+dim(test)
+CHD1<-CHD$CHD[random]
+
+# run model with training data
+glm1<-glm(CHD~AGE,data=CHD,family=binomial,subset=train)
+# predict with test data
+glm.probs1<-predict(glm1,test,type="response")
+
+glm.pred1<-rep(0,20)
+glm.pred1[glm.probs1>0.5]<-1
+
+table(glm.pred1,CHD1)
+mean(glm.pred1==CHD1)
+```
+

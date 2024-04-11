@@ -1,0 +1,237 @@
+---
+title: "HW5"
+author: "This author section should be left blank empty for anonymous grading"
+date: "Due 2024-04-05"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+# Here you load the necessary packages.
+# Here you enter your name: Soju Hokari - It won't show in the .html file but show in the .rmd file.
+library(car)
+
+# Do the things I did for HW 4 to clean the data
+advertising <- read.csv("datasets/advertising2.csv")
+
+# reorder the factor levels
+advertising$Day <- factor(advertising$Day, levels = c(
+  "Monday",
+  "Tuesday",
+  "Wednesday",
+  "Thursday",
+  "Friday"
+))
+advertising$Section <- factor(advertising$Section)
+levels(advertising$Day)
+```
+
+## Instruction: 
+Once you have completed your answer, please submit both the knitted .html file and the .rmd file together.
+
+### Question 1 (d) 
+
+```{r}
+# To test if there is a significant difference in number of inquiries between
+#   the two section on Monday, we do a multiple comparison.
+advertising$grouping <- advertising$Day:advertising$Section
+
+contrasts(advertising$grouping) <- contr.sum(levels(advertising$grouping))
+
+contrasts(advertising$grouping)
+
+levels(advertising$grouping)
+
+linearHypothesis(
+  lm(data = advertising, Inquiries ~ grouping),
+  c(0, 1, -1, 0, 0, 0, 0, 0, 0, 0), # Here, we make the hypothesis that beta_1 + (-beta_2) = 0
+  rhs = 0
+)
+```
+
+In this case, it appears that there is a significant difference in the number of inquiries between the two sections of the pper on Monday. The p-value for the F-statistic is 0.002032, which is less than 0.05.
+
+H0: $\mu$ + $\alpha$~1~ = $\mu$ + $\alpha$~2~   
+Ha: $\mu$ + $\alpha$~1~ != $\mu$ + $\alpha$~2~
+
+We reject the null, which means that the two group means are different.
+
+### Question 2
+My main expectation is that you play around with the diagnostic functions, get relevant diagnostic plots and quantities, and report your findings.
+
+Plots include:
+
+  - Leverage
+  - Studentized Residuals
+  - Influence 
+  - Added-variable plots
+  - Residuals v.s. fitted values
+  - qqplot of residuals
+
+Report any outliers, influential observations, and any final conclusions in this model. (Check
+codes used in the lecture notes.)
+
+```{r}
+Chirot
+library(dplyr)
+
+lm <- lm(
+  intensity ~ commerce +
+    tradition +
+    commerce:tradition +
+    midpeasant +
+    inequality,
+  data = Chirot
+)
+
+# Leverage
+# High leverage points are those which are strong outliers with respect to the independent variables
+plot(Chirot)
+
+# Example of a plot for intensity ~ commerce.
+plot(Chirot$commerce, Chirot$intensity)
+showLabels(
+  Chirot$commerce,
+  Chirot$intensity,
+  n = 3,
+  method = hatvalues(lm(intensity ~ commerce, data = Chirot)),
+  labels = row.names(Chirot)
+)
+
+# Here, the points with the highest hat values are all in the top right corner.
+```
+
+According to the scatterplot matrix, it looks like there are a few points that are strong outliers with respect to some of the independent variables.
+
+We can see whether these outliers are actually strong outliers by calculating hat values.
+
+```{r}
+hatvalues(lm)
+h_bar <- (5 + 1) / nrow(Chirot)
+
+data.frame(hatvalues(lm)) %>%
+  filter(hatvalues.lm. > 2 * h_bar)
+```
+
+Three points are strong outliers with respect to all independent variables: point 20, 31, and 32.
+
+If we try to look at strong outliers with respect to just one of the independent variables, this is what we get:
+
+```{r}
+ind_vars <- c("commerce", "tradition", "commerce:tradition", "midpeasant", "inequality")
+
+for (var in ind_vars) {
+  if (var == "commerce:tradition") {
+    lm_partial <- lm(intensity ~ commerce:tradition, data = Chirot)
+  } else {
+    lm_partial <- lm(Chirot$intensity ~ Chirot[[var]])
+  }
+
+  h_bar <- (1 + 1) / nrow(Chirot)
+
+  print(var)
+  print(
+    data.frame(hatvalues(lm_partial)) %>%
+      filter(hatvalues.lm_partial. > 2 * h_bar)
+  )
+}
+```
+
+It looks like for regressions with one independent variable, there are generally a few points with hat values above the threshold.
+
+This includes points:
+* 24, 29 for intensity ~ commerce
+* 15, 20, 24 for intensity ~ tradition
+* 24, 25, 29 for intensity ~ commerce:tradition
+* 31, 32 for intensity ~ midpeasant
+* 30, 31, 32 for intensity ~ inequality
+
+```{r}
+# Studentized Residuals
+# The studentized residual is a measure of outliers in the y direction.
+rstudent(lm)
+# We can run an outlierTest to measure whether we have any extreme residuals.
+outlierTest(lm, row.names(Chirot))
+```
+
+None of the adjusted p-values are smaller than 0.05, so we conclude that this model doesn't have any extreme residuals.
+
+```{r}
+# Influence
+# Influence is a measure of how much a point can influence the fitted model.
+# We can use cook's distance to look for high-influence points
+cooks.distance(lm)
+# If Cook's distance is > 4 / (n - k - 1), then it is unusually influential.
+data.frame(cooks.distance(lm)) %>%
+  filter(cooks.distance.lm. > 4 / (nrow(Chirot) - 5 - 1))
+plot(cooks.distance(lm))
+text(cooks.distance(lm), label = row.names(Chirot))
+```
+
+
+Here, we find that one row, row 20, is unusually influential.
+
+```{r}
+# Added-variable plots
+# We use added-variable plots to create partial regression plots without having to fit two regression models.
+for (var in ind_vars) {
+  avPlot(lm, var, id = TRUE)
+  # showLabels(
+  #   lm$residuals,
+  #   lm$residuals,
+  #   n = 2,
+  #   method = cooks.distance(lm),
+  #   labels = row.names(Chirot)
+  # )
+}
+# avPlot(lm, "commerce", id = TRUE)
+# showLabels(
+#   lm,
+#   n = 2,
+#   method = cooks.distance(lm),
+#   labels = row.names(Chirot)
+# )
+```
+
+Here, we can see where the influential points fall.
+
+```{r}
+# Residuals vs. fitted values
+# qqplot of residuals
+qqnorm(lm$residuals)
+qqline(lm$residuals)
+```
+
+Here, we see that the qqplot is pretty close to linear. This means that the residuals are normal.
+
+### Question 3 (a) 
+
+```{r}
+lm_bfox <- lm(partic ~ ., data = Bfox)
+summary(lm_bfox)
+```
+
+According to this multiple regression model, the fertility coefficient is positive (0.0002357), and is not significant at a 0.05 confidence level. This is not what the researchers expected (plus, it's not significant).
+
+The men's earnings coefficient is negative (-0.0593769), and not significant at a 0.05 confidence level. Again, this does not confirm the researchers' expectations.
+
+However, it appears that many of the estimates are very close to zero, with large standard errors and large p-values. This indicates that there could be some kind of multicollinearity going on.
+
+### Question 3 (b)  
+
+```{r}
+# We can plot a scatterplot matrix and produce a correlation matrix to look for possible multicollinearity.
+plot(Bfox)
+cor(Bfox)
+# Here, it looks like there is significant multicollinearity for many of the supposedly independent variables.
+
+# Now, we can test for multicollinearity by calculaing the VIF for our linear model:
+vif(lm_bfox)
+
+# Here, we see that many of the variables are highly correlated with other variables. For instance, menwage, womwage, and debt all have VIFs that are over 60, which indicates a major problem. Even tfr and parttime, which have much lower VIFs, are close to 10, indicating there could be a problem.
+```
+
+Given the problems that we have with multicollinearity, the signs of the regression coefficients would easily be flipped. The regression that we ran does not show that the researchers' expectations for fertility and men's earnings were wrong.
+
+Furthermore, as seen in the correlation matrix above, the pairwise correlation values for every single pair of variables is above 0.79 or below -0.79, indicating strong correlation. This further indicates a major problem with collinearity.

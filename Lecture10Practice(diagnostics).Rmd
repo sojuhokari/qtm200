@@ -1,0 +1,140 @@
+---
+title: "Lecture10(diagnostics)practice"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r cars}
+library(car)
+library(carData)
+```
+
+## 1. hatvalues
+```{r}
+lm <- lm(prestige ~ income + education, data = Duncan)
+plot(Duncan$education, Duncan$income)
+showLabels(
+    Duncan$education,
+    Duncan$income,
+    n = 3,
+    method = hatvalues(lm),
+    labels = row.names(Duncan)
+) # Show the label(name) of the top three hat values -- method = hatvalues()
+
+hatvalues(lm)
+
+plot(hatvalues(lm))
+
+# Including two reference lines for the hat value:
+# Here, hat_bar = (k + 1) / n
+# And we're including the lines for 2 * hat_bar and 3 * hat_bar
+abline(h = 2 * 3 / 45, lty = 2)
+abline(h = 3 * 3 / 45, lty = 2)
+
+# identify(1:45, hatvalues(lm),labels = row.names(Duncan))
+
+showLabels(
+    1:45,
+    hatvalues(lm),
+    n = 3,
+    method = hatvalues(lm),
+    labels = row.names(Duncan)
+)
+```
+
+
+## 2. Studentized Residuals 
+```{r}
+# Get the studentized residual using rstudent()
+sort(rstudent(lm))
+# Studentized residual has both negative and possible values
+#    The reference value is |rstudent| > 2
+
+# Run an outliertest
+outlierTest(lm, row.names(Duncan))
+# The output here shows the Bonferroni p-value, which is the corrected p-value
+# to decide whether the outliers are extremely large outliers in the y
+# direction.
+
+plot(rstudent(lm))
+showLabels(
+    1:45,
+    rstudent(lm),
+    n = 3,
+    method = abs(rstudent(lm)),
+    labels = row.names(Duncan)
+)
+```
+
+
+## 3. Influence measures
+```{r}
+influence.measures(lm)
+# Varous measures for outliers – dfbetas, dffit, cook's distance, hat values
+
+# dffit – difference in fitted y-values with and without the observation
+# `accountant`
+```
+
+
+#### cook's distance
+```{r}
+plot(cooks.distance(lm))
+
+# Cook's distance reference line: 4 / (n - k - 1)
+# So for here, it will be 4/45 - 2 - 1 = 4/42
+abline(h = 4 / 42, lty = 2)
+showLabels(
+    x = 1:45,
+    y = cooks.distance(lm),
+    n = 3,
+    method = cooks.distance(lm),
+    labels = row.names(Duncan)
+)
+```
+
+## 4. Put together
+```{r}
+influencePlot(
+    lm,
+    main = "Influence Plot",
+    sub = "Circle size is proportial to Cook's Distance"
+)
+```
+
+
+
+```{r}
+# Diagnose your linear model by using a plot!
+lm <- lm(prestige ~ income + education, data = Duncan)
+plot(lm)
+```
+
+
+Partial regression plot (Added variable plot)
+```{r}
+lm <- lm(prestige ~ income + education, data = Duncan) # The full model.
+
+# Avplot automatically creates the partial regression plot of a certain variable
+# without one having to fit two regression models, get the residuals, and plot
+# it.
+avPlot(lm, "income", id = TRUE) # So this is the partial regression plot of the
+#                                   income variable.
+
+# When using showLabels, make id = FALSE
+avPlot(lm, "income", id = FALSE)
+showLabels(
+    lm1$residuals,
+    lm$residuals,
+    n = 2,
+    method = cooks.distance(lm)
+)
+
+
+avPlots(lm) # default method is the absolute value of studentized residuals
+```
+
